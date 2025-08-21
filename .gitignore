@@ -1,46 +1,80 @@
 # macOS
 .DS_Store
+Thumbs.db
+
+# Project doc intentionally ignored
 guideline.txt
+
+# Editors/IDE
+.vscode/
+.idea/
+*.code-workspace
+
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-*.env
-*.venv
-env/
-venv/
-ENV/
+*.so
+
+# Packaging/build artefacts
+*.egg-info/
+.eggs/
 build/
 dist/
-*.egg-info/
+pip-wheel-metadata/
 
-# VSCode
-.vscode/
+# Virtual environments
+.env
+.env.*
+.envrc
+.direnv/
+.venv/
+venv/
+ENV/
+env/
 
 # Logs
 *.log
+logs/
 
-# Environment variables
-.env.*
+# Caches and testing
+.cache/
+.mypy_cache/
+.pytype/
+.ruff_cache/
+.pytest_cache/
+.tox/
+.nox/
+.pyre/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
 
 # Node
 node_modules/
 
-# Backup files
-*.bak
-*.swp
-*.swo
-*~
+# Docker
+.docker/
+docker-compose.override.yml
 
-# Coverage reports
-htmlcov/
-.coverage
-.tox/
-.nox/
-.cache/
-.pytest_cache/
-coverage.xml
+# Redis (if running locally outside containers)
+dump.rdb
+appendonly.aof
 
-# Jupyter Notebook
-.ipynb_checkpoints/
+# Helm
+*.tgz
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfvars
+terraform.tfvars.json
