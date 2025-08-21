@@ -22,7 +22,6 @@ dist/
 *.log
 
 # Environment variables
-.env
 .env.*
 
 # Node
