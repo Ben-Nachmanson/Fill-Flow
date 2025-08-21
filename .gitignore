@@ -1,0 +1,47 @@
+# macOS
+.DS_Store
+guideline.txt
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+*.venv
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# Node
+node_modules/
+
+# Backup files
+*.bak
+*.swp
+*.swo
+*~
+
+# Coverage reports
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+coverage.xml
+
+# Jupyter Notebook
+.ipynb_checkpoints/
