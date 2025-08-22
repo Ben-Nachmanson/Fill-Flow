@@ -1,9 +1,14 @@
-fastapi==0.112.2
-uvicorn[standard]==0.30.6
-asyncpg==0.29.0
-redis==5.0.7
-prometheus-client==0.20.0
-prometheus-fastapi-instrumentator==7.0.0
-python-dotenv==1.0.1
-pydantic==2.8.2
-pydantic_core==2.20.1
+fastapi>=0.95.0
+uvicorn[standard]>=0.22.0
+redis>=4.6.0
+prometheus-client>=0.16.0
+prometheus-fastapi-instrumentator>=6.0.0
+httpx>=0.24.0
+pytest>=7.3.0
+pytest-asyncio>=0.21.0
+python-dotenv>=1.0.0
+
+# Added runtime/test tools
+asyncpg>=0.30.0
+requests>=2.31.0
+alembic>=1.11.0

@@ -5,6 +5,8 @@ import random
 from datetime import datetime
 import redis.asyncio as redis
 from ..storage.db import Database
+from ..pricing.price_feed import RandomWalkPriceFeed
+from ..metrics import orders_filled_total
 
 STREAM_NAME = os.getenv("ORDERS_STREAM", "orders-stream")
 GROUP = os.getenv("ORDERS_GROUP", "fillers")
@@ -16,6 +18,8 @@ async def process_message(db: Database, data: dict):
     price = float(data["price"]) * (1 + random.uniform(-0.001, 0.001))
     qty = float(data["qty"])
     await db.apply_fill(int(data["order_id"]), price, qty)
+    # instrument metric
+    orders_filled_total.inc()
 
 
 async def worker():
@@ -30,16 +34,35 @@ async def worker():
     except Exception:
         pass
 
-    while True:
-        msgs = await r.xreadgroup(GROUP, CONSUMER, streams={STREAM_NAME: ">"}, count=10, block=5000)
-        if not msgs:
-            await asyncio.sleep(0.1)
-            continue
-        for _, entries in msgs:
-            for msg_id, fields in entries:
-                data = json.loads(fields.get("data").decode() if isinstance(fields.get("data"), (bytes, bytearray)) else fields.get("data"))
-                await process_message(db, data)
-                await r.xack(STREAM_NAME, GROUP, msg_id)
+    price_feed = RandomWalkPriceFeed()
+
+    try:
+        while True:
+            msgs = await r.xreadgroup(GROUP, CONSUMER, streams={STREAM_NAME: ">"}, count=10, block=5000)
+            if not msgs:
+                # If no messages, optionally tick the price feed and continue
+                await asyncio.sleep(0.1)
+                continue
+            for _, entries in msgs:
+                for msg_id, fields in entries:
+                    data = json.loads(fields.get("data").decode() if isinstance(fields.get("data"), (bytes, bytearray)) else fields.get("data"))
+                    await process_message(db, data)
+                    await r.xack(STREAM_NAME, GROUP, msg_id)
+    except asyncio.CancelledError:
+        # graceful cancellation
+        pass
+    except KeyboardInterrupt:
+        # allow Ctrl+C
+        pass
+    finally:
+        try:
+            await r.close()
+        except Exception:
+            pass
+        try:
+            await db.disconnect()
+        except Exception:
+            pass
 
 
 def main():

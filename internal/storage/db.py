@@ -97,6 +97,25 @@ class Database:
                 ts=row["ts"],
             )
 
+    async def get_orders(self) -> List[Order]:
+        assert self._pool is not None
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(
+                "select id, symbol, side, qty, price, status, ts from orders order by id"
+            )
+            return [
+                Order(
+                    id=r["id"],
+                    symbol=r["symbol"],
+                    side=Side(r["side"]),
+                    qty=r["qty"],
+                    price=r["price"],
+                    status=OrderStatus(r["status"]),
+                    ts=r["ts"],
+                )
+                for r in rows
+            ]
+
     async def get_positions(self):
         assert self._pool is not None
         async with self._pool.acquire() as conn:

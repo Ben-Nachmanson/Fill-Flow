@@ -1,0 +1,21 @@
+{
+  "dashboard": {
+    "title": "trade-svc",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Orders Created",
+        "targets": [
+          {"expr": "orders_created_total"}
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Orders Filled",
+        "targets": [
+          {"expr": "orders_filled_total"}
+        ]
+      }
+    ]
+  }
+}

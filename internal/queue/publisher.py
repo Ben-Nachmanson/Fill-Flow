@@ -20,3 +20,11 @@ class OrderPublisher:
             "price": order.price,
         }
         await self._redis.xadd(STREAM_NAME, {"data": json.dumps(payload)})
+
+    async def close(self) -> None:
+        """Close the async Redis client cleanly."""
+        try:
+            await self._redis.close()
+        except Exception:
+            # best-effort close; swallow errors during shutdown
+            pass
