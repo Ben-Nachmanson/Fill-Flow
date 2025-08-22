@@ -2,10 +2,11 @@ version: "3.8"
 services:
   db:
     image: postgres:15
+    env_file: .env
     environment:
-      POSTGRES_USER: trade
-      POSTGRES_PASSWORD: trade
-      POSTGRES_DB: trade
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
