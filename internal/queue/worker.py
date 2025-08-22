@@ -2,11 +2,14 @@ import os
 import json
 import asyncio
 import random
+import logging
 from datetime import datetime
 import redis.asyncio as redis
 from ..storage.db import Database
 from ..pricing.price_feed import RandomWalkPriceFeed
 from ..metrics import orders_filled_total
+
+logger = logging.getLogger("worker")
 
 STREAM_NAME = os.getenv("ORDERS_STREAM", "orders-stream")
 GROUP = os.getenv("ORDERS_GROUP", "fillers")
@@ -45,9 +48,35 @@ async def worker():
                 continue
             for _, entries in msgs:
                 for msg_id, fields in entries:
-                    data = json.loads(fields.get("data").decode() if isinstance(fields.get("data"), (bytes, bytearray)) else fields.get("data"))
-                    await process_message(db, data)
-                    await r.xack(STREAM_NAME, GROUP, msg_id)
+                    raw = fields.get("data")
+                    if raw is None:
+                        logger.warning("message %s missing 'data' field; acking and skipping", msg_id)
+                        try:
+                            await r.xack(STREAM_NAME, GROUP, msg_id)
+                        except Exception:
+                            logger.exception("failed to ack message %s", msg_id)
+                        continue
+
+                    try:
+                        if isinstance(raw, (bytes, bytearray)):
+                            raw = raw.decode()
+                        data = json.loads(raw)
+                    except Exception:
+                        logger.exception("failed to parse message %s: %r", msg_id, raw)
+                        # ack bad message so it doesn't block the stream
+                        try:
+                            await r.xack(STREAM_NAME, GROUP, msg_id)
+                        except Exception:
+                            logger.exception("failed to ack bad message %s", msg_id)
+                        continue
+
+                    try:
+                        await process_message(db, data)
+                        await r.xack(STREAM_NAME, GROUP, msg_id)
+                    except Exception:
+                        logger.exception("error processing message %s", msg_id)
+                        # don't ack so it can be retried / claimed
+
     except asyncio.CancelledError:
         # graceful cancellation
         pass
@@ -56,7 +85,12 @@ async def worker():
         pass
     finally:
         try:
-            await r.close()
+            # prefer async close API if available (redis>=5.0.1 uses aclose)
+            close_fn = getattr(r, "aclose", None)
+            if close_fn:
+                await close_fn()
+            else:
+                await r.close()
         except Exception:
             pass
         try:
