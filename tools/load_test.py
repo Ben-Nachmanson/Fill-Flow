@@ -84,8 +84,7 @@ async def main():
         try:
             p95 = statistics.quantiles(all_lat, n=100)[94]
         except Exception:
-            p95 = sorted(all_lat)[max(0, int(len(all_lat) * 0.95) - 1)]
-        print(f"Requests: {metrics.get('requests', 0)}")
+            p95 = sorted(all_lat)[max(0, int(len(all )}")
         print(f"P95 latency (ms): {p95:.2f}")
     else:
         print("No requests recorded.")
